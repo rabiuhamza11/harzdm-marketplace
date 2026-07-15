@@ -198,6 +198,8 @@ footer{text-align:center;padding:48px 20px;color:var(--gray);font-size:13px;bord
     <button class="filter-btn" onclick="setFilter('AIPrompt', this)">🤖 AI Prompts</button>
     <button class="filter-btn" onclick="setFilter('Photo', this)">📸 Photos</button>
     <button class="filter-btn" onclick="setFilter('Plugin', this)">🔌 Plugins</button>
+    <button class="filter-btn" onclick="setFilter('Real Estate Tools', this)">🏠 Real Estate</button>
+    <button class="filter-btn" onclick="setFilter('Construction Tools', this)">🏗️ Construction</button>
   </div>
   
   <div class="products-grid" id="products-grid"></div>
@@ -269,7 +271,7 @@ const API = 'https://superagent-2286fb2f.base44.app/functions';
 const CATALOG_URL = API + '/harzDMCatalog';
 const CHECKOUT_URL = API + '/harzDMCheckout';
 
-const CAT_ICONS = {Ebook:'📚',Course:'🎓',Template:'🎨',Software:'💻',Music:'🎵',AIPrompt:'🤖',Photo:'📸',Plugin:'🔌'};
+const CAT_ICONS = {Ebook:'📚',Course:'🎓',Template:'🎨',Software:'💻',Music:'🎵',AIPrompt:'🤖',Photo:'📸',Plugin:'🔌','Real Estate Tools':'🏠','Construction Tools':'🏗️'};
 
 let allProducts = [];
 let currentFilter = 'all';
@@ -284,6 +286,15 @@ async function loadProducts() {
   } catch(e) {
     document.getElementById('products-grid').innerHTML = '<div style="text-align:center;padding:60px;color:#94A3B8">Unable to load products. Please refresh the page.</div>';
   }
+}
+
+function formatPrice(p) {
+  const price = p.price || 0;
+  const currency = p.currency || 'USD';
+  if (currency === 'NGN') {
+    return '₦' + price.toLocaleString('en-NG');
+  }
+  return '$' + price.toFixed(2);
 }
 
 function renderProducts(products) {
@@ -306,10 +317,10 @@ function renderProducts(products) {
         <div class="product-name">${p.title||''}</div>
         <div class="product-seller">by ${p.seller_name||''}</div>
         <div class="product-footer">
-          <div class="product-price">$${(p.price||0).toFixed(2)}</div>
+          <div class="product-price">${formatPrice(p)}</div>
           <div class="product-rating">${rating}</div>
         </div>
-        <button class="btn-buy">🛒 Buy Now — $${(p.price||0).toFixed(2)}</button>
+        <button class="btn-buy">🛒 Buy Now — ${formatPrice(p)}</button>
       </div>
     </div>`;
   }).join('');
@@ -338,7 +349,10 @@ function openCheckout(id, title, seller, price, desc) {
   currentProductId = id;
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-seller').textContent = 'by ' + seller;
-  document.getElementById('modal-price').textContent = '$' + price.toFixed(2);
+  // Find the product to get currency
+  const prod = allProducts.find(p => p.id === id);
+  const currency = (prod && prod.currency) || 'USD';
+  document.getElementById('modal-price').textContent = currency === 'NGN' ? '₦' + price.toLocaleString('en-NG') : '$' + price.toFixed(2);
   document.getElementById('buyer-name').value = '';
   document.getElementById('buyer-email').value = '';
   document.getElementById('btn-pay').disabled = false;
